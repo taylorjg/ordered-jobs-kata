@@ -1,17 +1,14 @@
 module.exports = {
+  extends: "eslint:recommended",
   env: {
     es6: true,
     node: true,
-    "mocha": true
+    mocha: true
   },
-  extends: "eslint:recommended",
   globals: {
-    Atomics: "readonly",
-    SharedArrayBuffer: "readonly",
     chai: "readonly"
   },
   parserOptions: {
-    ecmaVersion: 2018,
-    sourceType: "module"
+    ecmaVersion: 2018
   }
 }

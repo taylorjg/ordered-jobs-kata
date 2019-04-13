@@ -1,7 +1,40 @@
-const orderJobs = lines => {
-  if (!lines) return ''
-  const jobs = parseLines(lines)
-  return jobs.map(job => job.id).join('')
+const I = require('immutable')
+
+const orderJobs = input => {
+  if (!input) return ''
+  const jobs = parseLines(input)
+  const initialMap = new I.Map()
+  const initialOutput = ''
+  return loop(jobs, initialMap, initialOutput)
+}
+
+const loop = (jobs, initialMap, initialOutput) => {
+  const seed = {
+    map: initialMap,
+    output: initialOutput
+  }
+  const finalAcc = jobs.reduce(
+    (acc, job) => {
+      const { map, output } = acc
+      if (map.has(job.id)) return acc
+      if (job.dependsOn) {
+        if (map.has(job.dependsOn)) {
+          return {
+            map: map.set(job.id, job.id),
+            output: output + job.id
+          }
+        }
+        return acc
+      }
+      return {
+        map: map.set(job.id, job.id),
+        output: output + job.id
+      }
+    },
+    seed)
+  return finalAcc.map.size === initialMap.size
+    ? initialOutput
+    : loop(jobs, finalAcc.map, finalAcc.output)
 }
 
 const parseLines = lines => lines.split('\n').map(parseLine)
