@@ -8,32 +8,20 @@ const orderJobs = input => {
   return loop(jobs, initialSet, initialOutput)
 }
 
-const loop = (jobs, initialSet, initialOutput) => {
-  const seed = {
-    set: initialSet,
-    output: initialOutput
-  }
-  const finalAcc = jobs.reduce(
-    (acc, job) => {
-      const { set, output } = acc
-      if (set.has(job.id)) return acc
-      if (job.dependsOn) {
-        if (set.has(job.dependsOn)) {
-          return {
-            set: set.add(job.id),
-            output: output + job.id
-          }
-        }
-        return acc
-      }
-      return {
-        set: set.add(job.id),
-        output: output + job.id
-      }
-    },
-    seed)
-  return finalAcc.set.size === initialSet.size
-    ? initialOutput
+const loop = (jobs, set, output) => {
+  const finalAcc = jobs.reduce((acc, job) => {
+    const { set, output } = acc
+    if (set.has(job.id)) return acc
+    const makeNewAcc = () => ({
+      set: set.add(job.id),
+      output: output + job.id
+    })
+    return job.dependency
+      ? (set.has(job.dependency) ? makeNewAcc() : acc)
+      : makeNewAcc()
+  }, { set, output })
+  return finalAcc.set === set
+    ? output
     : loop(jobs, finalAcc.set, finalAcc.output)
 }
 
@@ -43,7 +31,7 @@ const parseLine = line => {
   const m1 = line.match(/([a-z])\s=>\s([a-z])/)
   if (m1) return {
     id: m1[1],
-    dependsOn: m1[2]
+    dependency: m1[2]
   }
   const m2 = line.match(/([a-z])/)
   if (m2) return {
