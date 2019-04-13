@@ -2,7 +2,7 @@ const expect = require('chai').expect
 const orderJobs = require('./index.js')
 
 describe('ordered-jobs-kata tests', () => {
-  
+
   it('no jobs', () => {
     const output = orderJobs('')
     expect(output).to.be.empty
@@ -10,7 +10,7 @@ describe('ordered-jobs-kata tests', () => {
 
   it('one job with no dependencies', () => {
     const output = orderJobs('a')
-    assertOutputContainsIdsOnce(output, ['a'])
+    assertOutputContainsIdsOnce(output, 'a')
   })
 
   it('two jobs with no dependencies', () => {
@@ -19,21 +19,38 @@ describe('ordered-jobs-kata tests', () => {
       'b'
     ]
     const output = orderJobs(lines.join('\n'))
-    assertOutputContainsIdsOnce(output, ['a', 'b'])
+    assertOutputContainsIdsOnce(output, 'ab')
   })
 
-  it('simplest possible dependency', () => {
+  it('simple dependency', () => {
     const lines = [
       'a',
       'b => a'
     ]
     const output = orderJobs(lines.join('\n'))
-    assertOutputContainsIdsOnce(output, ['a', 'b'])
+    assertOutputContainsIdsOnce(output, 'ab')
     assertJobOrder(output, 'a', 'b')
   })
 
+  it('complex dependency', () => {
+    const lines = [
+      "a",
+      "b => c",
+      "c => f",
+      "d => a",
+      "e => b",
+      "f"
+    ]
+    const output = orderJobs(lines.join('\n'))
+    assertOutputContainsIdsOnce(output, 'abcdef')
+    assertJobOrder(output, 'c', 'b')
+    assertJobOrder(output, 'f', 'c')
+    assertJobOrder(output, 'a', 'd')
+    assertJobOrder(output, 'b', 'e')
+  })
+
   const assertOutputContainsIdsOnce = (output, ids) => {
-    ids.forEach(id => {
+    ids.split('').forEach(id => {
       const firstIndex = output.indexOf(id)
       expect(firstIndex).to.be.gte(0)
       const nextIndex = output.indexOf(id, firstIndex + 1)
