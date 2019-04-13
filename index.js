@@ -3,38 +3,38 @@ const I = require('immutable')
 const orderJobs = input => {
   if (!input) return ''
   const jobs = parseLines(input)
-  const initialMap = new I.Map()
+  const initialSet = new I.Set()
   const initialOutput = ''
-  return loop(jobs, initialMap, initialOutput)
+  return loop(jobs, initialSet, initialOutput)
 }
 
-const loop = (jobs, initialMap, initialOutput) => {
+const loop = (jobs, initialSet, initialOutput) => {
   const seed = {
-    map: initialMap,
+    set: initialSet,
     output: initialOutput
   }
   const finalAcc = jobs.reduce(
     (acc, job) => {
-      const { map, output } = acc
-      if (map.has(job.id)) return acc
+      const { set, output } = acc
+      if (set.has(job.id)) return acc
       if (job.dependsOn) {
-        if (map.has(job.dependsOn)) {
+        if (set.has(job.dependsOn)) {
           return {
-            map: map.set(job.id, job.id),
+            set: set.add(job.id),
             output: output + job.id
           }
         }
         return acc
       }
       return {
-        map: map.set(job.id, job.id),
+        set: set.add(job.id),
         output: output + job.id
       }
     },
     seed)
-  return finalAcc.map.size === initialMap.size
+  return finalAcc.set.size === initialSet.size
     ? initialOutput
-    : loop(jobs, finalAcc.map, finalAcc.output)
+    : loop(jobs, finalAcc.set, finalAcc.output)
 }
 
 const parseLines = lines => lines.split('\n').map(parseLine)
