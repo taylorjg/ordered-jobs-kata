@@ -4,12 +4,14 @@ const orderJobs = require('./index.js')
 describe('ordered-jobs-kata tests', () => {
 
   it('no jobs', () => {
-    const output = orderJobs('')
+    const input = ''
+    const output = orderJobs(input)
     expect(output).to.be.empty
   })
 
   it('one job with no dependencies', () => {
-    const output = orderJobs('a')
+    const input = 'a'
+    const output = orderJobs(input)
     assertOutputContainsIdsOnce(output, 'a')
   })
 
@@ -18,7 +20,8 @@ describe('ordered-jobs-kata tests', () => {
       'a',
       'b'
     ]
-    const output = orderJobs(lines.join('\n'))
+    const input = lines.join('\n')
+    const output = orderJobs(input)
     assertOutputContainsIdsOnce(output, 'ab')
   })
 
@@ -27,26 +30,53 @@ describe('ordered-jobs-kata tests', () => {
       'a',
       'b => a'
     ]
-    const output = orderJobs(lines.join('\n'))
+    const input = lines.join('\n')
+    const output = orderJobs(input)
     assertOutputContainsIdsOnce(output, 'ab')
     assertJobOrder(output, 'a', 'b')
   })
 
   it('complex dependency', () => {
     const lines = [
-      "a",
-      "b => c",
-      "c => f",
-      "d => a",
-      "e => b",
-      "f"
+      'a',
+      'b => c',
+      'c => f',
+      'd => a',
+      'e => b',
+      'f'
     ]
-    const output = orderJobs(lines.join('\n'))
+    const input = lines.join('\n')
+    const output = orderJobs(input)
     assertOutputContainsIdsOnce(output, 'abcdef')
     assertJobOrder(output, 'c', 'b')
     assertJobOrder(output, 'f', 'c')
     assertJobOrder(output, 'a', 'd')
     assertJobOrder(output, 'b', 'e')
+  })
+
+  it('simple circular dependency', () => {
+    const lines = [
+      'a',
+      'b',
+      'c => c'
+    ]
+    const input = lines.join('\n')
+    const message = 'Found circular dependency: c,c'
+    expect(() => orderJobs(input)).to.throw(message)
+  })
+
+  it('complex circular dependency', () => {
+    const lines = [
+      'a',
+      'b => c',
+      'c => f',
+      'd => a',
+      'e',
+      'f => b'
+    ]
+    const input = lines.join('\n')
+    const message = 'Found circular dependency: b,c,f,b'
+    expect(() => orderJobs(input)).to.throw(message)
   })
 
   const assertOutputContainsIdsOnce = (output, ids) => {

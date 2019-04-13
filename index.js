@@ -5,7 +5,31 @@ const orderJobs = input => {
   const jobs = parseLines(input)
   const initialSet = new I.Set()
   const initialOutput = ''
+  detectCircularDependencies(jobs)
   return loop(jobs, initialSet, initialOutput)
+}
+
+const buildMap = jobs =>
+  jobs.reduce((map, job) => map.set(job.id, job.dependency), new I.Map())
+
+const followDependencies = map => dependencies => {
+  const lastDependency = dependencies.slice(-1)[0]
+  const nextDependency = map.get(lastDependency)
+  if (nextDependency) {
+    const newDependencies = [...dependencies, nextDependency]
+    if (dependencies.includes(nextDependency)) {
+      const badDependencies = lastDependency === nextDependency
+        ? dependencies
+        : newDependencies
+      throw new Error(`Found circular dependency: ${badDependencies}`)
+    }
+    followDependencies(map)(newDependencies)
+  }
+}
+
+const detectCircularDependencies = jobs => {
+  const map = buildMap(jobs)
+  map.mapEntries(followDependencies(map))
 }
 
 const loop = (jobs, set, output) => {
